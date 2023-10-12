@@ -18,39 +18,37 @@ impl Point {
     }
 }
 struct Rope {
-    head: Point,
-    tail: Point,
+    knots: Vec<Point>,
 }
 
 impl Rope {
-    fn new() -> Rope {
+    fn new(nb_knots: usize) -> Rope {
         Rope {
-            head: Point::new(0, 0),
-            tail: Point::new(0, 0),
+            knots: vec![Point::new(0, 0); nb_knots],
         }
     }
-    fn move_head(&mut self, direction: &Point) {
-        self.head.x += direction.x;
-        self.head.y += direction.y;
-        self.move_tail();
-    }
 
-    fn move_tail(&mut self) {
-        let delta_x = self.head.x - self.tail.x;
-        let dx = match delta_x {
-            x if x > 0 => 1,
-            x if x < 0 => -1,
-            _ => 0,
-        };
-        let delta_y = self.head.y - self.tail.y;
-        let dy = match delta_y {
-            y if y > 0 => 1,
-            y if y < 0 => -1,
-            _ => 0,
-        };
-        if delta_x.abs() >= 2 || delta_y.abs() >= 2 {
-            self.tail.x += dx;
-            self.tail.y += dy;
+    fn move_head(&mut self, direction: &Point) {
+        self.knots[0].x += direction.x;
+        self.knots[0].y += direction.y;
+
+        for i in 1..self.knots.len() {
+            let delta_x = self.knots[i-1].x - self.knots[i].x;
+            let dx = match delta_x {
+                x if x > 0 => 1,
+                x if x < 0 => -1,
+                _ => 0,
+            };
+            let delta_y = self.knots[i-1].y - self.knots[i].y;
+            let dy = match delta_y {
+                y if y > 0 => 1,
+                y if y < 0 => -1,
+                _ => 0,
+            };
+            if delta_x.abs() >= 2 || delta_y.abs() >= 2 {
+                self.knots[i].x += dx;
+                self.knots[i].y += dy;
+            }
         }
     }
 }
@@ -71,22 +69,31 @@ fn parse_line(input: &str) -> IResult<&str, (Point, usize)> {
 
 pub fn solve1() -> usize {
     let input = utils::read_input("src/day09/input.txt").unwrap();
-    let mut rope = Rope::new();
+    let mut rope = Rope::new(2);
     let mut tail_orbit = HashSet::new();
     for line in input.lines() {
         let (_, (direction, distance)) = parse_line(line).unwrap();
         for _ in 0..distance {
             rope.move_head(&direction);
-            tail_orbit.insert(rope.tail.clone());
+            tail_orbit.insert(rope.knots[1].clone());
         }
     }
     tail_orbit.len()
 }
 
-// pub fn solve2() -> i32 {
-//     let input = utils::read_input("src/day09/input.txt").unwrap();
-//     0
-// }
+pub fn solve2() -> usize {
+    let input = utils::read_input("src/day09/input.txt").unwrap();
+    let mut rope = Rope::new(10);
+    let mut tail_orbit = HashSet::new();
+    for line in input.lines() {
+        let (_, (direction, distance)) = parse_line(line).unwrap();
+        for _ in 0..distance {
+            rope.move_head(&direction);
+            tail_orbit.insert(rope.knots[9].clone());
+        }
+    }
+    tail_orbit.len()
+}
 
 #[cfg(test)]
 mod tests {
@@ -98,9 +105,9 @@ mod tests {
         assert_eq!(solve1(), 6190);
     }
 
-    // #[test]
-    // fn test_solve2() {
-    //     println!("Part Two: {}", solve2());
-    //     assert_eq!(solve2(), 2516);
-    // }
+    #[test]
+    fn test_solve2() {
+        println!("Part Two: {}", solve2());
+        assert_eq!(solve2(), 2516);
+    }
 }
