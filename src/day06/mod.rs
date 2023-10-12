@@ -1,7 +1,7 @@
 use crate::utils;
 
 pub fn solve1() -> i32 {
-    let input = utils::read_input("src/day06.txt").unwrap();
+    let input = utils::read_input("src/day06/input.txt").unwrap();
     let mut buffer = Vec::new();
     
     let mut chars = input.chars();
@@ -34,7 +34,7 @@ fn are_all_different(buffer: &Vec<char>) -> bool {
 }
 
 pub fn solve2() -> i32 {
-    let input = utils::read_input("src/day06.txt").unwrap();
+    let input = utils::read_input("src/day06/input.txt").unwrap();
     let mut buffer = Vec::new();
     
     let mut chars = input.chars();

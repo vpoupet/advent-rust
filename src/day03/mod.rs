@@ -13,7 +13,7 @@ fn to_priorities(items: &str) -> Vec<i32> {
 }
 
 pub fn solve1() -> i32 {
-    let input = utils::read_input("src/day03.txt").unwrap();
+    let input = utils::read_input("src/day03/input.txt").unwrap();
     let mut total = 0;
     for line in input.lines() {
         let first = &line[..line.len() / 2];
@@ -33,7 +33,7 @@ pub fn solve1() -> i32 {
 }
 
 pub fn solve2() -> i32 {
-    let input = utils::read_input("src/day03.txt").unwrap();
+    let input = utils::read_input("src/day03/input.txt").unwrap();
     let mut lines = input.lines();
     let mut total = 0;
 

@@ -29,7 +29,7 @@ fn make_stacks() -> Vec<Vec<char>> {
         stacks.push(Vec::new());
     }
 
-    let input = utils::read_input("src/day05_start.txt").unwrap();
+    let input = utils::read_input("src/day05/start.txt").unwrap();
     for line in input.lines() {
         for i in 0..9 {
             let c = line.chars().nth(4*i + 1).unwrap();
@@ -47,7 +47,7 @@ fn make_stacks() -> Vec<Vec<char>> {
 pub fn solve1() -> String {
     let mut stacks = make_stacks();
     
-    let input = utils::read_input("src/day05_moves.txt").unwrap();
+    let input = utils::read_input("src/day05/moves.txt").unwrap();
     for line in input.lines() {
         let (n, start, end) = parse_move(line).unwrap().1;
         for _ in 0..n {
@@ -66,7 +66,7 @@ pub fn solve1() -> String {
 pub fn solve2() -> String {
     let mut stacks = make_stacks();
     
-    let input = utils::read_input("src/day05_moves.txt").unwrap();
+    let input = utils::read_input("src/day05/moves.txt").unwrap();
     for line in input.lines() {
         let (n, start, end) = parse_move(line).unwrap().1;
         let l = stacks[start - 1].len();

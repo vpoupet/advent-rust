@@ -1,12 +1,12 @@
 use crate::utils;
 
 pub fn solve1() -> i32 {
-    let input = utils::read_input("src/dayXX.txt").unwrap();
+    let input = utils::read_input("src/dayXX/input.txt").unwrap();
     0
 }
 
 pub fn solve2() -> i32 {
-    let input = utils::read_input("src/dayXX.txt").unwrap();
+    let input = utils::read_input("src/dayXX/input.txt").unwrap();
     0
 }
 

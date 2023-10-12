@@ -13,7 +13,7 @@ fn parser(input: &str) -> IResult<&str, (i32, i32)> {
 }
 
 pub fn solve1() -> i32 {
-    let input = utils::read_input("src/day02.txt").unwrap();
+    let input = utils::read_input("src/day02/input.txt").unwrap();
     let mut score = 0;
     
     for line in input.lines() {
@@ -30,7 +30,7 @@ pub fn solve1() -> i32 {
 }
 
 pub fn solve2() -> i32 {
-    let input = utils::read_input("src/day02.txt").unwrap();
+    let input = utils::read_input("src/day02/input.txt").unwrap();
     let mut score = 0;
     
     for line in input.lines() {

@@ -74,7 +74,7 @@ fn build_root() -> Rc<RefCell<Directory>> {
     let root = Rc::new(RefCell::new(Directory::new(String::from("/"), None)));
     let mut current_dir = Rc::clone(&root);
 
-    let input = utils::read_input("src/day07.txt").unwrap();
+    let input = utils::read_input("src/day07/input.txt").unwrap();
     for line in input.lines() {
         let (_, command) = parse_line(line).unwrap();
         match command {

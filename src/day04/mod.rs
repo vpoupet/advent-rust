@@ -36,7 +36,7 @@ fn parse_line(input: &str) -> (Interval, Interval) {
 }
 
 pub fn solve1() -> i32 {
-    let input = utils::read_input("src/day04.txt").unwrap();
+    let input = utils::read_input("src/day04/input.txt").unwrap();
     let mut total = 0;
     for line in input.lines() {
         let (i1, i2) = parse_line(line);
@@ -48,7 +48,7 @@ pub fn solve1() -> i32 {
 }
 
 pub fn solve2() -> i32 {
-    let input = utils::read_input("src/day04.txt").unwrap();
+    let input = utils::read_input("src/day04/input.txt").unwrap();
     let mut total = 0;
     for line in input.lines() {
         let (i1, i2) = parse_line(line);

@@ -1,7 +1,7 @@
 use crate::utils;
 
 pub fn solve1() -> i32 {
-    let input = utils::read_input("src/day01.txt").unwrap();
+    let input = utils::read_input("src/day01/input.txt").unwrap();
     let mut best_total = 0;
     let mut current_total = 0;
     for line in input.lines() {
@@ -18,7 +18,7 @@ pub fn solve1() -> i32 {
 }
 
 pub fn solve2() -> i32 {
-    let input = utils::read_input("src/day01.txt").unwrap();
+    let input = utils::read_input("src/day01/input.txt").unwrap();
     let mut totals = Vec::new();
     let mut current_total = 0;
     for line in input.lines() {
