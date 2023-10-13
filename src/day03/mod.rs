@@ -69,13 +69,15 @@ mod tests {
 
     #[test]
     fn test_solve1() {
-        println!("Part One: {}", solve1());
-        assert_eq!(solve1(), 8243);
+        let solution = solve1();
+        println!("Part One: {}", solution);
+        assert_eq!(solution, 8243);
     }
 
     #[test]
     fn test_solve2() {
-        println!("Part Two: {}", solve2());
-        assert_eq!(solve2(), 2631);
+        let solution = solve2();
+        println!("Part Two: {}", solution);
+        assert_eq!(solution, 2631);
     }
 }
