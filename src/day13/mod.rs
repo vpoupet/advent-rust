@@ -2,11 +2,12 @@ use std::cmp::Ordering;
 
 use nom::{
     branch::alt,
+    bytes::complete::tag,
     character::complete::{char, digit1},
     combinator::map,
     multi::{separated_list0, separated_list1},
-    sequence::{delimited, terminated, pair},
-    IResult, bytes::complete::tag,
+    sequence::{delimited, pair, terminated},
+    IResult,
 };
 
 use crate::utils;
@@ -21,8 +22,12 @@ impl PartialEq for Message {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Message::Value(v1), Message::Value(v2)) => v1 == v2,
-            (Message::Value(v1), Message::List(_)) => Message::List(vec![Message::Value(*v1)]).eq(other),
-            (Message::List(_), Message::Value(v2)) => self.eq(&Message::List(vec![Message::Value(*v2)])),
+            (Message::Value(v1), Message::List(_)) => {
+                Message::List(vec![Message::Value(*v1)]).eq(other)
+            }
+            (Message::List(_), Message::Value(v2)) => {
+                self.eq(&Message::List(vec![Message::Value(*v2)]))
+            }
             (Message::List(l1), Message::List(l2)) => l1 == l2,
         }
     }
@@ -32,8 +37,12 @@ impl Ord for Message {
     fn cmp(&self, other: &Self) -> Ordering {
         match (self, other) {
             (Message::Value(v1), Message::Value(v2)) => v1.cmp(v2),
-            (Message::Value(v1), Message::List(_)) => Message::List(vec![Message::Value(*v1)]).cmp(other),
-            (Message::List(_), Message::Value(v2)) => self.cmp(&Message::List(vec![Message::Value(*v2)])),
+            (Message::Value(v1), Message::List(_)) => {
+                Message::List(vec![Message::Value(*v1)]).cmp(other)
+            }
+            (Message::List(_), Message::Value(v2)) => {
+                self.cmp(&Message::List(vec![Message::Value(*v2)]))
+            }
             (Message::List(l1), Message::List(l2)) => l1.cmp(l2),
         }
     }
@@ -66,11 +75,11 @@ fn parse_message(input: &str) -> IResult<&str, Message> {
 
 fn parse_input(input: &str) -> IResult<&str, Vec<(Message, Message)>> {
     separated_list1(
-        tag("\n"), 
+        tag("\n"),
         pair(
-            terminated(parse_message, tag("\n")), 
-            terminated(parse_message, tag("\n"))
-        )
+            terminated(parse_message, tag("\n")),
+            terminated(parse_message, tag("\n")),
+        ),
     )(input)
 }
 
@@ -81,7 +90,7 @@ pub fn solve1() -> i32 {
     for i in 0..message_pairs.len() {
         let (m1, m2) = &message_pairs[i];
         if m1.partial_cmp(&m2).unwrap() == Ordering::Less {
-            total += (i+1) as i32;
+            total += (i + 1) as i32;
         }
     }
     total
@@ -98,11 +107,11 @@ pub fn solve2() -> i32 {
 
     let marker1 = Message::List(vec![Message::List(vec![Message::Value(2)])]);
     let marker2 = Message::List(vec![Message::List(vec![Message::Value(6)])]);
-    
+
     messages.push(marker1.clone());
     messages.push(marker2.clone());
     messages.sort();
-    
+
     let mut index1 = 0;
     let mut index2 = 0;
     for i in 0..messages.len() {
@@ -112,7 +121,7 @@ pub fn solve2() -> i32 {
             index2 = i + 1;
         }
     }
-    
+
     (index1 * index2) as i32
 }
 
