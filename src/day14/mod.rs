@@ -12,31 +12,30 @@ use std::fmt;
 
 struct Cave {
     grid: Vec<Vec<u8>>,
-    depth: usize,
     offset: usize,
-    width: usize,
 }
 
 impl Cave {
     fn new(filename: &str) -> Self {
         let input = utils::read_input(filename).unwrap();
         let (_, paths) = parse_input(&input).unwrap();
-        let mut min_x = usize::MAX;
-        let mut max_x = 0;
         let mut max_depth = 0;
 
         for path in &paths {
-            for (x, d) in path {
-                min_x = min_x.min(*x);
-                max_x = max_x.max(*x);
+            for (_, d) in path {
                 max_depth = max_depth.max(*d);
             }
         }
 
-        let offset = min_x - 1;
-        let width = max_x - min_x + 3;
-        let depth = max_depth + 1;
-        let mut grid = vec![vec![b'.'; width]; depth];
+        let offset = 500 - max_depth - 5;
+        let max_x = 500 + max_depth + 5;
+
+        let width = max_x - offset;
+        let mut grid = vec![vec![b'.'; width]; max_depth + 3];
+
+        for i in 0..width {
+            grid[max_depth + 2][i] = b'#';
+        }
 
         for path in &paths {
             for i in 0..path.len() - 1 {
@@ -54,19 +53,14 @@ impl Cave {
             }
         }
 
-        Self {
-            grid,
-            depth,
-            offset,
-            width,
-        }
+        Self { grid, offset }
     }
 
-    fn drop_sand(&mut self) -> Option<(usize, usize)> {
+    fn drop_sand(&mut self) -> (usize, usize) {
         let mut x = 500 - self.offset;
         let mut d = 0;
 
-        while d + 1 < self.depth {
+        while d + 1 < self.grid.len() {
             if self.grid[d + 1][x] == b'.' {
                 d += 1;
             } else if self.grid[d + 1][x - 1] == b'.' {
@@ -77,10 +71,10 @@ impl Cave {
                 x += 1;
             } else {
                 self.grid[d][x] = b'o';
-                return Some((x, d));
+                return (d, x + self.offset);
             }
         }
-        None
+        panic!("Sand dropped beyond bottom");
     }
 }
 
@@ -115,15 +109,27 @@ fn parse_input(input: &str) -> IResult<&str, Vec<Vec<(usize, usize)>>> {
 pub fn solve1() -> i32 {
     let mut cave = Cave::new("src/day14/input.txt");
     let mut counter = 0;
-    while let Some(_) = cave.drop_sand() {
+    loop {
+        let (d, _) = cave.drop_sand();
+        if d == cave.grid.len() - 2 {
+            break;
+        }
         counter += 1;
     }
     counter
 }
 
 pub fn solve2() -> i32 {
-    let input = utils::read_input("src/dayXX/input.txt").unwrap();
-    0
+    let mut cave = Cave::new("src/day14/input.txt");
+    let mut counter = 0;
+    loop {
+        let (d, x) = cave.drop_sand();
+        counter += 1;
+        if (d, x) == (0, 500) {
+            break;
+        }
+    }
+    counter
 }
 
 #[cfg(test)]
@@ -141,6 +147,6 @@ mod tests {
     fn test_solve2() {
         let solution = solve2();
         println!("Part Two: {}", solution);
-        // assert_eq!(solution, 0);
+        assert_eq!(solution, 25248);
     }
 }
