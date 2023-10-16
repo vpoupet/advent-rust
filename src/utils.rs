@@ -1,10 +1,10 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use nom::IResult;
 use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt};
 use nom::sequence::pair;
+use nom::IResult;
 
 pub fn read_input(filename: &str) -> Result<String, std::io::Error> {
     // open file given as input and returns its content as a String
