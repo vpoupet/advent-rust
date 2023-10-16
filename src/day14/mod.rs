@@ -1,11 +1,10 @@
 use crate::utils;
 use nom::{
-    branch::alt,
     bytes::complete::tag,
     character::complete::{char, digit1},
     combinator::map,
-    multi::{separated_list0, separated_list1},
-    sequence::{delimited, pair, separated_pair, terminated},
+    multi::separated_list1,
+    sequence::separated_pair,
     IResult,
 };
 use std::fmt;
