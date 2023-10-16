@@ -120,10 +120,10 @@ impl Diamond {
 fn parse_line(input: &str) -> IResult<&str, Sensor> {
     map(
         tuple((
-            preceded(tag("Sensor at x="), utils::parse_signed_int),
-            preceded(tag(", y="), utils::parse_signed_int),
-            preceded(tag(": closest beacon is at x="), utils::parse_signed_int),
-            preceded(tag(", y="), utils::parse_signed_int),
+            preceded(tag("Sensor at x="), utils::parse_int),
+            preceded(tag(", y="), utils::parse_int),
+            preceded(tag(": closest beacon is at x="), utils::parse_int),
+            preceded(tag(", y="), utils::parse_int),
         )),
         |(x, y, beacon_x, beacon_y)| Sensor {
             x,

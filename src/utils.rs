@@ -14,7 +14,7 @@ pub fn read_input(filename: &str) -> Result<String, std::io::Error> {
     Ok(contents)
 }
 
-pub fn parse_signed_int(input: &str) -> IResult<&str, i32> {
+pub fn parse_int(input: &str) -> IResult<&str, i32> {
     map(
         pair(opt(char('-')), digit1),
         |(sign, number): (Option<char>, &str)| {
