@@ -1,5 +1,5 @@
-use std::fmt::Display;
 use std::collections::VecDeque;
+use std::fmt::Display;
 
 use crate::utils;
 
@@ -18,16 +18,16 @@ pub struct RockShape {
 
 impl RockShape {
     pub fn new(points: Vec<Point>) -> RockShape {
-        let mut width = 0;
-        let mut height = 0;
+        let mut max_x = 0;
+        let mut max_y = 0;
         for point in points.iter() {
-            width = width.max(point.x);
-            height = height.max(point.y);
+            max_x = max_x.max(point.x);
+            max_y = max_y.max(point.y);
         }
         RockShape {
             points,
-            max_x: width,
-            max_y: height,
+            max_x,
+            max_y,
         }
     }
 }
@@ -77,7 +77,7 @@ pub fn make_rock_shapes() -> [RockShape; 5] {
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct RockBlock {
     pub shape: RockShape,
-    // position of the block relative to the chamber height_shift
+    // absolute position of the block in the chamber
     pub position: Point,
 }
 
@@ -85,7 +85,7 @@ pub struct RockBlock {
 pub struct Chamber {
     // absolute height of the highest point in the chamber (only fully dropped blocks count)
     pub top_height: i32,
-    // block that is currently falling. Its height is relative to the height_shift
+    // block that is currently falling (position of the block is absolute from the bottom of the chamber)
     pub current_block: Option<RockBlock>,
     pub grid: VecDeque<[bool; 7]>,
     pub shapes: [RockShape; 5],
@@ -96,11 +96,11 @@ pub struct Chamber {
 }
 
 impl Chamber {
-    pub fn new(jet_patterns: Vec<i32>) -> Chamber {
+    pub fn new(grid_size: usize, jet_patterns: Vec<i32>) -> Chamber {
         let mut grid = VecDeque::new();
-        grid.push_front([true; 7]);
-        for _ in 0..49 {
-            grid.push_front([false; 7]);
+        grid.push_back([true; 7]);
+        for _ in 0..(grid_size - 1) {
+            grid.push_back([false; 7]);
         }
 
         Chamber {
@@ -120,20 +120,17 @@ impl Chamber {
         self.shapes_index = (self.shapes_index + 1) % self.shapes.len();
 
         while self.grid.len() <= (self.top_height + 3 + shape.max_y - self.height_shift) as usize {
-            // make room for the new block
-            let mut popped_row = self.grid.pop_back().unwrap();
-            for i in 0..7 {
-                popped_row[i] = false;
-            }
-            self.grid.push_front(popped_row);
-            self.height_shift += 1;    
+            // slide the grid to make room for the new block
+            self.grid.pop_front().unwrap();
+            self.grid.push_back([false; 7]);
+            self.height_shift += 1;
         }
 
         self.current_block = Some(RockBlock {
             shape: shape.clone(),
             position: Point {
                 x: 2,
-                y: (self.top_height + 3 - self.height_shift) as i32,
+                y: self.top_height + 3,
             },
         });
     }
@@ -150,7 +147,7 @@ impl Chamber {
                 return;
             }
             for point in block.shape.points.iter() {
-                if self.grid[(block.position.y + point.y) as usize]
+                if self.grid[(block.position.y + point.y - self.height_shift) as usize]
                     [(block.position.x + point.x + direction) as usize]
                 {
                     // block would hit another block
@@ -163,19 +160,17 @@ impl Chamber {
 
     pub fn drop_block(&mut self) {
         if let Some(ref mut block) = self.current_block {
+            if block.position.y <= self.height_shift {
+                panic!("block fell below the grid window");
+            }
             let mut can_drop = true;
-            if block.position.y <= 0 {
-                // block would hit the bottom
-                can_drop = false;
-            } else {
-                for point in block.shape.points.iter() {
-                    if self.grid[(block.position.y + point.y - 1) as usize]
-                        [(block.position.x + point.x) as usize]
-                    {
-                        // block would hit another block
-                        can_drop = false;
-                        break;
-                    }
+            for point in block.shape.points.iter() {
+                if self.grid[(block.position.y + point.y - self.height_shift - 1) as usize]
+                    [(block.position.x + point.x) as usize]
+                {
+                    // block would hit another block
+                    can_drop = false;
+                    break;
                 }
             }
             if can_drop {
@@ -183,7 +178,7 @@ impl Chamber {
             } else {
                 // freeze the block
                 for point in block.shape.points.iter() {
-                    self.grid[(point.y + block.position.y) as usize]
+                    self.grid[(block.position.y + point.y - self.height_shift) as usize]
                         [(point.x + block.position.x) as usize] = true;
                 }
                 self.top_height = self
@@ -197,7 +192,14 @@ impl Chamber {
 
 impl Display for Chamber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for row in self.grid.iter().rev() {
+        let mut grid_copy = self.grid.clone();
+        if let Some(block) = &self.current_block {
+            for point in block.shape.points.iter() {
+                grid_copy[(block.position.y + point.y - self.height_shift) as usize]
+                    [(point.x + block.position.x) as usize] = true;
+            }
+        }
+        for row in grid_copy.iter().rev() {
             for cell in row.iter() {
                 if *cell {
                     write!(f, "#")?;
@@ -226,7 +228,7 @@ pub fn parse_input(filename: &str) -> Vec<i32> {
 
 pub fn solve1() -> i32 {
     let jet_patterns = parse_input("src/day17/input.txt");
-    let mut chamber = Chamber::new(jet_patterns);
+    let mut chamber = Chamber::new(200, jet_patterns);
 
     let mut shape_counter = 0;
     chamber.add_block();
@@ -260,6 +262,7 @@ fn longest_period(s: &str) -> usize {
 
 pub fn solve2() -> i32 {
     let input = utils::read_input("src/day17/input.txt").unwrap();
+    
     let p = longest_period(&input);
     println!("period: {}", p);
     0
