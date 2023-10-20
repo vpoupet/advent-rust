@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::collections::VecDeque;
 
 use crate::utils;
 
@@ -76,30 +77,41 @@ pub fn make_rock_shapes() -> [RockShape; 5] {
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct RockBlock {
     pub shape: RockShape,
+    // position of the block relative to the chamber height_shift
     pub position: Point,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct Chamber {
+    // absolute height of the highest point in the chamber (only fully dropped blocks count)
     pub top_height: i32,
+    // block that is currently falling. Its height is relative to the height_shift
     pub current_block: Option<RockBlock>,
-    pub grid: Vec<[bool; 7]>,
+    pub grid: VecDeque<[bool; 7]>,
     pub shapes: [RockShape; 5],
     pub shapes_index: usize,
     pub jet_patterns: Vec<i32>,
     pub jet_index: usize,
+    pub height_shift: i32,
 }
 
 impl Chamber {
-    pub fn new(size: usize, jet_patterns: Vec<i32>) -> Chamber {
+    pub fn new(jet_patterns: Vec<i32>) -> Chamber {
+        let mut grid = VecDeque::new();
+        grid.push_front([true; 7]);
+        for _ in 0..49 {
+            grid.push_front([false; 7]);
+        }
+
         Chamber {
             top_height: 0,
             current_block: None,
-            grid: vec![[false; 7]; size],
+            grid,
             shapes: make_rock_shapes(),
             shapes_index: 0,
-            jet_patterns: jet_patterns,
+            jet_patterns,
             jet_index: 0,
+            height_shift: -1,
         }
     }
 
@@ -107,16 +119,21 @@ impl Chamber {
         let shape = &self.shapes[self.shapes_index];
         self.shapes_index = (self.shapes_index + 1) % self.shapes.len();
 
-        while self.grid.len() <= (self.top_height + 3 + shape.max_y) as usize {
+        while self.grid.len() <= (self.top_height + 3 + shape.max_y - self.height_shift) as usize {
             // make room for the new block
-            self.grid.push([false; 7]);
+            let mut popped_row = self.grid.pop_back().unwrap();
+            for i in 0..7 {
+                popped_row[i] = false;
+            }
+            self.grid.push_front(popped_row);
+            self.height_shift += 1;    
         }
 
         self.current_block = Some(RockBlock {
             shape: shape.clone(),
             position: Point {
                 x: 2,
-                y: (self.top_height + 3) as i32,
+                y: (self.top_height + 3 - self.height_shift) as i32,
             },
         });
     }
@@ -209,7 +226,7 @@ pub fn parse_input(filename: &str) -> Vec<i32> {
 
 pub fn solve1() -> i32 {
     let jet_patterns = parse_input("src/day17/input.txt");
-    let mut chamber = Chamber::new(10, jet_patterns);
+    let mut chamber = Chamber::new(jet_patterns);
 
     let mut shape_counter = 0;
     chamber.add_block();
