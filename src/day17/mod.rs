@@ -115,7 +115,39 @@ impl Chamber {
         }
     }
 
-    pub fn add_block(&mut self) {
+    pub fn run_to_sync(&mut self) -> i32 {
+        let mut block_counter = 0;
+        loop {
+            for _ in 0..5 {
+                self.drop_new_block();
+            }
+            block_counter += 5;
+            if self.jet_index == 0 {
+                break;
+            }
+        }
+        block_counter
+    }
+
+    pub fn drop_new_block(&mut self) {
+        self.add_block();
+        while self.current_block.is_some() {
+            self.shift_block();
+            self.drop_block();
+        }
+    }
+
+    pub fn drop_new_block_set(&mut self) {
+        for _ in 0..5 {
+            self.add_block();
+            while self.current_block.is_some() {
+                self.shift_block();
+                self.drop_block();
+            }
+        }
+    }
+
+    fn add_block(&mut self) {
         let shape = &self.shapes[self.shapes_index];
         self.shapes_index = (self.shapes_index + 1) % self.shapes.len();
 
@@ -135,7 +167,7 @@ impl Chamber {
         });
     }
 
-    pub fn shift_block(&mut self) {
+    fn shift_block(&mut self) {
         let direction = self.jet_patterns[self.jet_index];
         self.jet_index = (self.jet_index + 1) % self.jet_patterns.len();
 
@@ -158,7 +190,7 @@ impl Chamber {
         }
     }
 
-    pub fn drop_block(&mut self) {
+    fn drop_block(&mut self) {
         if let Some(ref mut block) = self.current_block {
             if block.position.y <= self.height_shift {
                 panic!("block fell below the grid window");
@@ -230,42 +262,39 @@ pub fn solve1() -> i32 {
     let jet_patterns = parse_input("src/day17/input.txt");
     let mut chamber = Chamber::new(200, jet_patterns);
 
-    let mut shape_counter = 0;
-    chamber.add_block();
-    while shape_counter < 2022 {
-        chamber.shift_block();
-        chamber.drop_block();
-        if chamber.current_block.is_none() {
-            shape_counter += 1;
-            chamber.add_block();
-        }
+    for _ in 0..2022 {
+        chamber.drop_new_block();
     }
     // println!("{}", chamber);
     chamber.top_height
 }
 
-fn longest_period(s: &str) -> usize {
-    let n = s.len();
-    let mut pi = vec![0; n];
-    let mut k = 0;
-    for i in 1..n {
-        while k > 0 && s.as_bytes()[k] != s.as_bytes()[i] {
-            k = pi[k - 1];
-        }
-        if s.as_bytes()[k] == s.as_bytes()[i] {
-            k += 1;
-        }
-        pi[i] = k;
-    }
-    *pi.iter().max().unwrap()
-}
+pub fn solve2() -> i64 {
+    let jet_patterns = parse_input("src/day17/input.txt");
+    let mut chamber1 = Chamber::new(200, jet_patterns.clone());
+    let mut chamber2 = Chamber::new(200, jet_patterns.clone());
 
-pub fn solve2() -> i32 {
-    let input = utils::read_input("src/day17/input.txt").unwrap();
-    
-    let p = longest_period(&input);
-    println!("period: {}", p);
-    0
+    let mut steps_difference = 0;
+    loop {
+        chamber1.drop_new_block_set();
+        chamber2.drop_new_block_set();
+        chamber2.drop_new_block_set();
+        steps_difference += 1;
+        if chamber1.jet_index == chamber2.jet_index && chamber1.grid == chamber2.grid {
+                break;
+        }
+    }
+    let height1 = chamber1.top_height as i64;
+    let height2 = chamber2.top_height as i64;
+    let nb_steps: i64 = 1000000000000 / 5;
+    let nb_cycles = nb_steps / steps_difference as i64 - 1;
+    let extra_steps = nb_steps % steps_difference as i64;
+    for _ in 0..extra_steps {
+        chamber2.drop_new_block_set();
+    }
+    let height3 = chamber2.top_height as i64;
+
+    height1 + (height2 - height1) * nb_cycles + (height3 - height2)
 }
 
 #[cfg(test)]
@@ -283,6 +312,6 @@ mod tests {
     fn test_solve2() {
         let solution = solve2();
         println!("Part Two: {}", solution);
-        // assert_eq!(solution, 0);
+        assert_eq!(solution, 1541449275365);
     }
 }
