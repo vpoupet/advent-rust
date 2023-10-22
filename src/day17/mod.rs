@@ -1,3 +1,4 @@
+use rand::{self, Rng};
 use std::collections::VecDeque;
 use std::fmt::Display;
 
@@ -222,6 +223,15 @@ impl Chamber {
     }
 }
 
+fn make_random_jet_patterns(n: i32) -> Vec<i32> {
+    let mut jet_patterns = Vec::new();
+    let mut rng = rand::thread_rng();
+    for _ in 0..n {
+        jet_patterns.push(2 * rng.gen_range(0..=1) - 1);
+    }
+    jet_patterns
+}
+
 impl Display for Chamber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut grid_copy = self.grid.clone();
@@ -271,6 +281,7 @@ pub fn solve1() -> i32 {
 
 pub fn solve2() -> i64 {
     let jet_patterns = parse_input("src/day17/input.txt");
+    // let jet_patterns = make_random_jet_patterns(10091);
     let mut chamber1 = Chamber::new(200, jet_patterns.clone());
     let mut chamber2 = Chamber::new(200, jet_patterns.clone());
 
@@ -281,9 +292,11 @@ pub fn solve2() -> i64 {
         chamber2.drop_new_block_set();
         steps_difference += 1;
         if chamber1.jet_index == chamber2.jet_index && chamber1.grid == chamber2.grid {
-                break;
+            break;
         }
     }
+    println!("steps_difference: {}", steps_difference);
+
     let height1 = chamber1.top_height as i64;
     let height2 = chamber2.top_height as i64;
     let nb_steps: i64 = 1000000000000 / 5;
