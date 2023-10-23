@@ -230,7 +230,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "long test"]
+    #[ignore = "long test (125s)"]
     fn test_solve2() {
         let solution = solve2();
         println!("Part Two: {}", solution);
