@@ -53,16 +53,16 @@ fn eval(label: &str) -> Option<i64> {
     }
     match job {
         Job::Number(x) => return Some(x),
-        Job::Operation(a, op, b) => {
-            let x = eval(&a);
-            let y = eval(&b);
-            match (x, y) {
-                (Some(x), Some(y)) => {
+        Job::Operation(label1, op, label2) => {
+            let val1 = eval(&label1);
+            let val2 = eval(&label2);
+            match (val1, val2) {
+                (Some(val1), Some(val2)) => {
                     let value = match op {
-                        '+' => x + y,
-                        '*' => x * y,
-                        '-' => x - y,
-                        '/' => x / y,
+                        '+' => val1 + val2,
+                        '*' => val1 * val2,
+                        '-' => val1 - val2,
+                        '/' => val1 / val2,
                         _ => panic!("Unknown operator"),
                     };
                     let mut jobs = JOBS.lock().unwrap();
@@ -76,14 +76,84 @@ fn eval(label: &str) -> Option<i64> {
     }
 }
 
+fn set_value(label: &str, value: i64) {
+    let job;
+    {
+        let jobs = JOBS.lock().unwrap();
+        job = jobs.get(label).unwrap().clone();
+    }
+    match job {
+        Job::Unknown => {
+            let mut jobs = JOBS.lock().unwrap();
+            jobs.insert(label.to_string(), Job::Number(value));
+        },
+        Job::Operation(label1, op, label2) => {
+            let val1 = eval(&label1);
+            let val2 = eval(&label2);
+            match (val1, val2) {
+                (Some(val1), None) => {
+                    match op {
+                        '+' => set_value(&label2, value - val1),
+                        '*' => set_value(&label2, value / val1),
+                        '-' => set_value(&label2, val1 - value),
+                        '/' => set_value(&label2, val1 / value),
+                        _ => panic!("Unknown operator"),
+                    }
+                },
+                (None, Some(val2)) => {
+                    match op {
+                        '+' => set_value(&label1, value - val2),
+                        '*' => set_value(&label1, value / val2),
+                        '-' => set_value(&label1, value + val2),
+                        '/' => set_value(&label1, value * val2),
+                        _ => panic!("Unknown operator"),
+                    }
+                },
+                _ => {
+                    panic!("Cannot set value");
+                }
+            }
+        },
+        _ => panic!("Cannot set value"),
+    }
+}
+
 pub fn solve1() -> i64 {
     make_jobs("src/day21/input.txt");
     eval("root").unwrap()
 }
 
-pub fn solve2() -> i32 {
-    // let input = utils::read_input("src/dayXX/input.txt").unwrap();
-    0
+pub fn solve2() -> i64 {
+    make_jobs("src/day21/input.txt");
+    let label1;
+    let label2;
+    {
+        let mut jobs = JOBS.lock().unwrap();
+        // get two labels that should be equal from root
+        let root_job = jobs.get("root").unwrap();
+        match root_job {
+            Job::Operation(a, _, b) => {
+                label1 = a.clone();
+                label2 = b.clone();
+            }
+            _ => panic!("Root job is not an operation"),
+        }
+        jobs.remove("root");
+        // set job "humn" as Unknown
+        jobs.insert(String::from("humn"), Job::Unknown);
+    }
+
+    match (eval(&label1), eval(&label2)) {
+        (Some(val1), None) => {
+            set_value(&label2, val1);
+        },
+        (None, Some(val2)) => {
+            set_value(&label1, val2);
+        },
+        _ => panic!("No value to set"),
+    }
+
+    eval("humn").unwrap()
 }
 
 #[cfg(test)]
@@ -101,6 +171,6 @@ mod tests {
     fn test_solve2() {
         let solution = solve2();
         println!("Part Two: {}", solution);
-        // assert_eq!(solution, 0);
+        assert_eq!(solution, 3916936880448);
     }
 }
