@@ -223,7 +223,7 @@ impl Chamber {
     }
 }
 
-fn make_random_jet_patterns(n: i32) -> Vec<i32> {
+pub fn make_random_jet_patterns(n: i32) -> Vec<i32> {
     let mut jet_patterns = Vec::new();
     let mut rng = rand::thread_rng();
     for _ in 0..n {
