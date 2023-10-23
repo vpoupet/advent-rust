@@ -26,3 +26,7 @@ pub fn parse_int(input: &str) -> IResult<&str, i32> {
         },
     )(input)
 }
+
+pub fn div_up(a: i32, b: i32) -> i32 {
+    (a + (b - 1)) / b
+}
