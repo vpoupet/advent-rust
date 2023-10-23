@@ -3,9 +3,9 @@ use lazy_static::lazy_static;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::alpha1,
+    character::complete::{alpha1, one_of},
     combinator::map,
-    sequence::{separated_pair, tuple},
+    sequence::{separated_pair, tuple, delimited},
     IResult,
 };
 use std::collections::HashMap;
@@ -18,26 +18,15 @@ lazy_static! {
 #[derive(Debug, Clone)]
 enum Job {
     Number(i64),
-    Add(String, String),
-    Mul(String, String),
-    Sub(String, String),
-    Div(String, String),
+    Operation(String, char, String),
+    Unknown,
 }
 
 fn parse_job(input: &str) -> IResult<&str, Job> {
     alt((
         map(utils::parse_int, |x| Job::Number(x as i64)),
-        map(tuple((alpha1, tag(" + "), alpha1)), |x| {
-            Job::Add(String::from(x.0), String::from(x.2))
-        }),
-        map(tuple((alpha1, tag(" * "), alpha1)), |x| {
-            Job::Mul(String::from(x.0), String::from(x.2))
-        }),
-        map(tuple((alpha1, tag(" - "), alpha1)), |x| {
-            Job::Sub(String::from(x.0), String::from(x.2))
-        }),
-        map(tuple((alpha1, tag(" / "), alpha1)), |x| {
-            Job::Div(String::from(x.0), String::from(x.2))
+        map(tuple((alpha1, delimited(tag(" "), one_of("+*-/"), tag(" ")), alpha1)), |x| {
+            Job::Operation(String::from(x.0), x.1, String::from(x.2))
         }),
     ))(input)
 }
@@ -56,53 +45,40 @@ fn make_jobs(filename: &str) {
     }
 }
 
-fn eval(label: &str) -> i64 {
+fn eval(label: &str) -> Option<i64> {
     let job;
     {
         let jobs = JOBS.lock().unwrap();
         job = jobs.get(label).unwrap().clone();
     }
-
     match job {
-        Job::Number(x) => return x,
-        Job::Add(a, b) => {
+        Job::Number(x) => return Some(x),
+        Job::Operation(a, op, b) => {
             let x = eval(&a);
             let y = eval(&b);
-            let value = x + y;
-            let mut jobs = JOBS.lock().unwrap();
-            jobs.insert(label.to_string(), Job::Number(value));
-            return value;
+            match (x, y) {
+                (Some(x), Some(y)) => {
+                    let value = match op {
+                        '+' => x + y,
+                        '*' => x * y,
+                        '-' => x - y,
+                        '/' => x / y,
+                        _ => panic!("Unknown operator"),
+                    };
+                    let mut jobs = JOBS.lock().unwrap();
+                    jobs.insert(label.to_string(), Job::Number(value));
+                    return Some(value);
+                }
+                _ => return None,
+            }
         }
-        Job::Mul(a, b) => {
-            let x = eval(&a);
-            let y = eval(&b);
-            let value = x * y;
-            let mut jobs = JOBS.lock().unwrap();
-            jobs.insert(label.to_string(), Job::Number(value));
-            return value;
-        }
-        Job::Sub(a, b) => {
-            let x = eval(&a);
-            let y = eval(&b);
-            let value = x - y;
-            let mut jobs = JOBS.lock().unwrap();
-            jobs.insert(label.to_string(), Job::Number(value));
-            return value;
-        }
-        Job::Div(a, b) => {
-            let x = eval(&a);
-            let y = eval(&b);
-            let value = x / y;
-            let mut jobs = JOBS.lock().unwrap();
-            jobs.insert(label.to_string(), Job::Number(value));
-            return value;
-        }
+        Job::Unknown => return None,
     }
 }
 
 pub fn solve1() -> i64 {
     make_jobs("src/day21/input.txt");
-    eval("root")
+    eval("root").unwrap()
 }
 
 pub fn solve2() -> i32 {
