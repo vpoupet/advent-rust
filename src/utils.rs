@@ -1,10 +1,9 @@
-use std::fs::File;
-use std::io::prelude::*;
-
 use nom::character::complete::{char, digit1};
 use nom::combinator::{map, opt};
 use nom::sequence::pair;
 use nom::IResult;
+use std::fs::File;
+use std::io::{stdin, stdout, Read, Write};
 
 pub fn read_input(filename: &str) -> Result<String, std::io::Error> {
     // open file given as input and returns its content as a String
@@ -29,4 +28,11 @@ pub fn parse_int(input: &str) -> IResult<&str, i32> {
 
 pub fn div_up(a: i32, b: i32) -> i32 {
     (a + (b - 1)) / b
+}
+
+pub fn pause() {
+    let mut stdout = stdout();
+    stdout.write(b"Press Enter to continue...").unwrap();
+    stdout.flush().unwrap();
+    stdin().read(&mut [0]).unwrap();
 }
