@@ -1,17 +1,16 @@
-use std::{fmt, collections::HashSet};
+use std::collections::HashSet;
 
 use crate::utils;
 
 static DIRECTIONS: [(i32, i32); 4] = [(1, 0), (-1, 0), (0, 1), (0, -1)];
 
 struct Board {
-    width: usize,
-    height: usize,
+    width: i32,
+    height: i32,
     left_moving_grid: Vec<Vec<bool>>,
     right_moving_grid: Vec<Vec<bool>>,
     up_moving_grid: Vec<Vec<bool>>,
     down_moving_grid: Vec<Vec<bool>>,
-    time: i32,
 }
 
 impl Board {
@@ -37,92 +36,96 @@ impl Board {
         }
 
         Self {
-            width,
-            height,
+            width: width as i32,
+            height: height as i32,
             left_moving_grid,
             right_moving_grid,
             up_moving_grid,
             down_moving_grid,
-            time: 0,
         }
     }
 
-    fn has_obstacle(&self, i: usize, j: usize) -> bool {
-        {
-            let j = (j as i32 + self.time).rem_euclid(self.width as i32);
-            if self.left_moving_grid[i][j as usize] {
-                return true;
-            }
+    fn is_safe(&self, i: i32, j: i32, time: i32) -> bool {
+        if (i == -1 && j == 0) || (i == self.height && j == self.width - 1) {
+            // special case for entrance and exit
+            return true;
         }
-        {
-            let j = (j as i32 - self.time).rem_euclid(self.width as i32);
-            if self.right_moving_grid[i][j as usize] {
-                return true;
-            }
+        if i < 0 || i >= self.height || j < 0 || j >= self.width {
+            // out of bounds
+            return false;
         }
-        {
-            let i = (i as i32 + self.time).rem_euclid(self.height as i32);
-            if self.up_moving_grid[i as usize][j] {
-                return true;
-            }
-        }
-        {
-            let i = (i as i32 - self.time).rem_euclid(self.height as i32);
-            if self.down_moving_grid[i as usize][j] {
-                return true;
-            }
-        }
-        false
-    }
-}
 
-impl fmt::Display for Board {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for i in 0..self.height {
-            for j in 0..self.width {
-                if self.has_obstacle(i, j) {
-                    write!(f, "*")?;
-                } else {
-                    write!(f, ".")?;
+        if self.left_moving_grid[i as usize][(j + time).rem_euclid(self.width) as usize]
+            || self.right_moving_grid[i as usize][(j - time).rem_euclid(self.width) as usize]
+            || self.up_moving_grid[(i + time).rem_euclid(self.height) as usize][j as usize]
+            || self.down_moving_grid[(i - time).rem_euclid(self.height) as usize][j as usize]
+        {
+            // there is a moving obstacle on the cell
+            return false;
+        }
+        true
+    }
+
+    fn get_next_positions(&self, positions: HashSet<(i32, i32)>, time: i32) -> HashSet<(i32, i32)> {
+        let mut result = HashSet::new();
+        for (i, j) in positions {
+            if self.is_safe(i, j, time) {
+                result.insert((i, j));
+            }
+            for (di, dj) in &DIRECTIONS {
+                if self.is_safe(i + di, j + dj, time) {
+                    result.insert((i + di, j + dj));
                 }
             }
-            writeln!(f)?;
         }
-        Ok(())
+        result
     }
 }
 
 pub fn solve1() -> i32 {
-    let mut board = Board::new("src/day24/input.txt");
-    while board.has_obstacle(0, 0) {
-        board.time += 1;
-    }
+    let board = Board::new("src/day24/input.txt");
     let mut positions = HashSet::new();
-    positions.insert((0, 0));
+    let mut time = 0;
+    positions.insert((-1, 0)); // start position
 
-    loop {
-        board.time += 1;
-        let mut new_positions = HashSet::new();
-        for (i, j) in &positions {
-            if !board.has_obstacle(*i as usize, *j as usize) {
-                new_positions.insert((*i, *j));
-            }
-            for (di, dj) in &DIRECTIONS {
-                if (0..board.height as i32).contains(&(i + di)) && (0..board.width as i32).contains(&(j + dj)) && !board.has_obstacle((i + di) as usize, (j + dj) as usize) {
-                    new_positions.insert((i+di, j+dj));
-                }
-            }
-        }
-        positions = new_positions;
-        if positions.contains(&(board.height as i32 - 1, board.width as i32 - 1)) {
-            return board.time + 1;
-        }
+    let exit_position = (board.height as i32, board.width as i32 - 1);
+    while !positions.contains(&exit_position) {
+        time += 1;
+        positions = board.get_next_positions(positions, time);
     }
+
+    time
 }
 
 pub fn solve2() -> i32 {
-    let _input = utils::read_input("src/day24/input.txt").unwrap();
-    0
+    let board = Board::new("src/day24/input.txt");
+    let start_position = (-1, 0);
+    let exit_position = (board.height as i32, board.width as i32 - 1);
+    let mut time = 0;
+    
+    let mut positions = HashSet::new();
+    positions.insert(start_position); // start position
+    while !positions.contains(&exit_position) {
+        time += 1;
+        positions = board.get_next_positions(positions, time);
+    }
+    
+    positions = HashSet::new();
+    positions.insert(exit_position);
+    while !positions.contains(&start_position) {
+        time += 1;
+        positions = board.get_next_positions(positions, time);
+    }
+    
+    positions = HashSet::new();
+    positions.insert(start_position);
+    while !positions.contains(&exit_position) {
+        time += 1;
+        positions = board.get_next_positions(positions, time);
+    }
+    println!("Time to reach exit: {}", time);
+
+    time
 }
 
 #[cfg(test)]
@@ -133,7 +136,7 @@ mod tests {
     fn test_solve1() {
         let solution = solve1();
         println!("Part One: {}", solution);
-        // assert_eq!(solution, 0);
+        assert_eq!(solution, 266);
     }
 
     #[test]
