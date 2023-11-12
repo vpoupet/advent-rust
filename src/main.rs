@@ -1,3 +1,3 @@
 fn main() {
-    println!("Solution: {}", advent::year2022::day16::solve2());
+    println!("Solution: {}", advent::year2020::day17::solve2());
 }

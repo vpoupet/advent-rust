@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use nom::{
-    bytes::complete::tag, character::complete::alpha1, multi::separated_list1, sequence, IResult,
+    bytes::complete::tag, character::complete::alpha1, multi::separated_list1, IResult,
 };
 
 use crate::utils;
