@@ -28,37 +28,21 @@ pub fn solve2() -> i32 {
     let input = utils::read_input("src/year2023/day01/input.txt").unwrap();
     let mut total = 0;
 
-    let digits: HashMap<_, _> = [
-        ("0", 0),
-        ("1", 1),
-        ("2", 2),
-        ("3", 3),
-        ("4", 4),
-        ("5", 5),
-        ("6", 6),
-        ("7", 7),
-        ("8", 8),
-        ("9", 9),
-        ("one", 1),
-        ("two", 2),
-        ("three", 3),
-        ("four", 4),
-        ("five", 5),
-        ("six", 6),
-        ("seven", 7),
-        ("eight", 8),
-        ("nine", 9),
-    ]
-    .iter()
-    .cloned()
-    .collect();
+    let digit_names = [
+        "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+    ];
+    let mut digits: HashMap<String, i32> = HashMap::new();
+    for i in 1..10 {
+        digits.insert(i.to_string(), i as i32);
+        digits.insert(digit_names[i-1].to_owned(), i as i32);
+    }
 
     for line in input.lines() {
         let mut c1: Option<i32> = None;
         let mut c2: Option<i32> = None;
         for i in 0..line.len() {
             for key in digits.keys() {
-                if line[i..].starts_with(*key) {
+                if line[i..].starts_with(key) {
                     if c1.is_none() {
                         c1 = Some(digits[key]);
                     }
