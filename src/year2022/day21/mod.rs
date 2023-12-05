@@ -46,14 +46,14 @@ fn make_jobs(filename: &str) -> HashMap<String, Job> {
     jobs
 }
 
-fn eval(label: &str, mut jobs: HashMap<String, Job>) -> (Option<i64>, HashMap<String, Job>) {
+fn eval(label: &str, jobs: &mut HashMap<String, Job>) -> Option<i64> {
     let job = jobs.get(label).unwrap().clone();
 
     match job {
-        Job::Number(x) => return (Some(x), jobs),
+        Job::Number(x) => return Some(x),
         Job::Operation(label1, op, label2) => {
-            let (val1, mut jobs) = eval(&label1, jobs);
-            let (val2, mut jobs) = eval(&label2, jobs);
+            let val1 = eval(&label1, jobs);
+            let val2 = eval(&label2, jobs);
             match (val1, val2) {
                 (Some(val1), Some(val2)) => {
                     let value = match op {
@@ -64,39 +64,37 @@ fn eval(label: &str, mut jobs: HashMap<String, Job>) -> (Option<i64>, HashMap<St
                         _ => panic!("Unknown operator"),
                     };
                     jobs.insert(label.to_string(), Job::Number(value));
-                    return (Some(value), jobs);
+                    return Some(value);
                 }
-                _ => return (None, jobs),
+                _ => return None,
             }
         }
-        Job::Unknown => return (None, jobs),
+        Job::Unknown => return None,
     }
 }
 
-fn set_value(label: &str, value: i64, mut jobs: HashMap<String, Job>) -> HashMap<String, Job> {
+fn set_value(label: &str, value: i64, jobs: &mut HashMap<String, Job>) {
     let job = jobs.get(label).unwrap().clone();
     match job {
         Job::Unknown => {
             jobs.insert(label.to_string(), Job::Number(value));
         }
         Job::Operation(label1, op, label2) => {
-            let (val1, j) = eval(&label1, jobs);
-            jobs = j;
-            let (val2, j) = eval(&label2, jobs);
-            jobs = j;
+            let val1 = eval(&label1, jobs);
+            let val2 = eval(&label2, jobs);
             match (val1, val2) {
                 (Some(val1), None) => match op {
-                    '+' => jobs = set_value(&label2, value - val1, jobs),
-                    '*' => jobs = set_value(&label2, value / val1, jobs),
-                    '-' => jobs = set_value(&label2, val1 - value, jobs),
-                    '/' => jobs = set_value(&label2, val1 / value, jobs),
+                    '+' => set_value(&label2, value - val1, jobs),
+                    '*' => set_value(&label2, value / val1, jobs),
+                    '-' => set_value(&label2, val1 - value, jobs),
+                    '/' => set_value(&label2, val1 / value, jobs),
                     _ => panic!("Unknown operator"),
                 },
                 (None, Some(val2)) => match op {
-                    '+' => jobs = set_value(&label1, value - val2, jobs),
-                    '*' => jobs = set_value(&label1, value / val2, jobs),
-                    '-' => jobs = set_value(&label1, value + val2, jobs),
-                    '/' => jobs = set_value(&label1, value * val2, jobs),
+                    '+' => set_value(&label1, value - val2, jobs),
+                    '*' => set_value(&label1, value / val2, jobs),
+                    '-' => set_value(&label1, value + val2, jobs),
+                    '/' => set_value(&label1, value * val2, jobs),
                     _ => panic!("Unknown operator"),
                 },
                 _ => {
@@ -106,13 +104,11 @@ fn set_value(label: &str, value: i64, mut jobs: HashMap<String, Job>) -> HashMap
         }
         _ => panic!("Cannot set value"),
     }
-    jobs
 }
 
 pub fn solve1() -> i64 {
-    let jobs = make_jobs("src/year2022/day21/input.txt");
-    let (result, _) = eval("root", jobs);
-    result.unwrap()
+    let mut jobs = make_jobs("src/year2022/day21/input.txt");
+    eval("root", &mut jobs).unwrap()
 }
 
 pub fn solve2() -> i64 {
@@ -132,22 +128,17 @@ pub fn solve2() -> i64 {
     // set job "humn" as Unknown
     jobs.insert(String::from("humn"), Job::Unknown);
 
-    let (val1, j) = eval(&label1, jobs);
-    jobs = j;
-    let (val2, j) = eval(&label2, jobs);
-    jobs = j;
-    match (val1, val2) {
+    match (eval(&label1, &mut jobs), eval(&label2, &mut jobs)) {
         (Some(val1), None) => {
-            jobs = set_value(&label2, val1, jobs);
+            set_value(&label2, val1, &mut jobs);
         }
         (None, Some(val2)) => {
-            jobs = set_value(&label1, val2, jobs);
+            set_value(&label1, val2, &mut jobs);
         }
         _ => panic!("No value to set"),
     }
 
-    let (val, _) = eval("humn", jobs);
-    val.unwrap()
+    eval("humn", &mut jobs).unwrap()
 }
 
 #[cfg(test)]
