@@ -5,6 +5,8 @@ use nom::sequence::pair;
 use nom::IResult;
 use std::fs::File;
 use std::io::{stdin, stdout, Read, Write};
+use std::ops::Neg;
+use std::str::FromStr;
 
 pub fn read_input(filename: &str) -> Result<String, std::io::Error> {
     // open file given as input and returns its content as a String
@@ -14,11 +16,24 @@ pub fn read_input(filename: &str) -> Result<String, std::io::Error> {
     Ok(contents)
 }
 
-pub fn parse_int(input: &str) -> IResult<&str, i32> {
+pub fn parse_unsigned_int<T: FromStr>(input: &str) -> IResult<&str, T> {
+    map(digit1, |number: &str| {
+        let value = match number.parse::<T>() {
+            Ok(v) => v,
+            Err(_) => panic!("Could not parse int"),
+        };
+        return value;
+    })(input)
+}
+
+pub fn parse_int<T: FromStr + Neg<Output = T>>(input: &str) -> IResult<&str, T> {
     map(
         pair(opt(alt((char('-'), char('+')))), digit1),
         |(sign, number): (Option<char>, &str)| {
-            let value = number.parse::<i32>().unwrap();
+            let value = match number.parse::<T>() {
+                Ok(v) => v,
+                Err(_) => panic!("Could not parse int"),
+            };
             if sign == Some('-') {
                 return -value;
             }

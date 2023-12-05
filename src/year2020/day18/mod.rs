@@ -16,7 +16,7 @@ fn parse_line(input: &str) -> IResult<&str, Vec<Token>> {
         map(tag(" * "), |_| Token::Mul),
         map(tag("("), |_| Token::OpenParen),
         map(tag(")"), |_| Token::CloseParen),
-        map(utils::parse_int, |n| Token::Num(n as i64)),
+        map(utils::parse_int, |n| Token::Num(n)),
     )))(input)
 }
 

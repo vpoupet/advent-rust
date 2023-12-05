@@ -24,7 +24,7 @@ enum Job {
 
 fn parse_job(input: &str) -> IResult<&str, Job> {
     alt((
-        map(utils::parse_int, |x| Job::Number(x as i64)),
+        map(utils::parse_int, |x| Job::Number(x)),
         map(tuple((alpha1, delimited(tag(" "), one_of("+*-/"), tag(" ")), alpha1)), |x| {
             Job::Operation(String::from(x.0), x.1, String::from(x.2))
         }),
