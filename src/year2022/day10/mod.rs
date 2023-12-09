@@ -53,12 +53,12 @@ pub fn solve1() -> i32 {
     }
     let mut total = 0;
     for i in [20, 60, 100, 140, 180, 220] {
-        total += i as i32 * state[i-1];
+        total += i as i32 * state[i - 1];
     }
     total
 }
 
-pub fn solve2() -> Vec<String>{
+pub fn solve2() -> Vec<String> {
     let input = utils::read_input("src/year2022/day10/input.txt").unwrap();
     let mut crt = Vec::new();
     let mut state = Vec::new();
@@ -79,7 +79,7 @@ pub fn solve2() -> Vec<String>{
     for j in 0..6 {
         let mut crt_line = String::new();
         for i in 0..40 {
-            if state[40*j + i] - 1 <= i as i32 && i as i32 <= state[40*j + i] + 1 {
+            if state[40 * j + i] - 1 <= i as i32 && i as i32 <= state[40 * j + i] + 1 {
                 crt_line.push_str("#");
             } else {
                 crt_line.push_str(" ");
@@ -105,9 +105,20 @@ mod tests {
     fn test_solve2() {
         let solution = solve2();
         println!("Part Two:");
-        for line in solution {
+        for line in &solution {
             println!("{}", line);
         }
+        assert_eq!(
+            solution,
+            vec![
+                "###   ##  #### #### #  # #  # ###  #  # ",
+                "#  # #  #    # #    #  # #  # #  # # #  ",
+                "#  # #      #  ###  #### #  # #  # ##   ",
+                "###  # ##  #   #    #  # #  # ###  # #  ",
+                "# #  #  # #    #    #  # #  # # #  # #  ",
+                "#  #  ### #### #### #  #  ##  #  # #  # ",
+            ]
+        );
         // Solution: "RGZEHURK"
     }
 }
