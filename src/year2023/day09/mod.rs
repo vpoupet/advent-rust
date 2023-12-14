@@ -3,7 +3,7 @@ use nom::{bytes::complete::tag, multi::separated_list1};
 use crate::utils;
 
 fn get_input_sequences() -> Vec<Vec<i64>> {
-    let input = utils::read_input("src/year2023/day08/input.txt").unwrap();
+    let input = utils::read_input("src/year2023/day09/input.txt").unwrap();
     let mut sequences: Vec<Vec<i64>> = Vec::new();
     for line in input.lines() {
         let (_, values) = separated_list1(tag(" "), utils::parse_int)(line).unwrap();
