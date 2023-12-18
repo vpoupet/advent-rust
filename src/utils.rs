@@ -4,7 +4,7 @@ use nom::combinator::{map, opt};
 use nom::sequence::pair;
 use nom::IResult;
 use std::fs::File;
-use std::io::{stdin, stdout, Read, Write};
+use std::io::Read;
 use std::ops::Neg;
 use std::str::FromStr;
 
@@ -44,11 +44,4 @@ pub fn parse_int<T: FromStr + Neg<Output = T>>(input: &str) -> IResult<&str, T> 
 
 pub fn div_up(a: i32, b: i32) -> i32 {
     (a + (b - 1)) / b
-}
-
-pub fn pause() {
-    let mut stdout = stdout();
-    stdout.write(b"Press Enter to continue...").unwrap();
-    stdout.flush().unwrap();
-    stdin().read(&mut [0]).unwrap();
 }
