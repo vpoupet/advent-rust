@@ -45,8 +45,8 @@ enum Command {
     CdParent,
     Cd(String),
     Ls,
-    Dir(String),
-    File(usize, String),
+    Dir,
+    File(usize),
 }
 
 fn parse_filename(input: &str) -> IResult<&str, &str> {
@@ -60,11 +60,11 @@ fn parse_line(input: &str) -> IResult<&str, Command> {
             Command::Cd(s.to_string())
         }),
         map(tag("$ ls"), |_| Command::Ls),
-        map(preceded(tag("dir "), alpha1), |s: &str| {
-            Command::Dir(s.to_string())
+        map(preceded(tag("dir "), alpha1), |_s: &str| {
+            Command::Dir
         }),
-        map(separated_pair(digit1, char(' '), parse_filename), |(size, name): (&str, &str)| {
-            Command::File(size.parse::<usize>().unwrap(), String::from(name))
+        map(separated_pair(digit1, char(' '), parse_filename), |(size, _name): (&str, &str)| {
+            Command::File(size.parse::<usize>().unwrap())
         }),
     ))(input)?;
     Ok((remaining, command))
@@ -90,7 +90,7 @@ fn build_root() -> Rc<RefCell<Directory>> {
                 current_dir.borrow_mut().subdirs.push(Rc::clone(&new_dir));
                 current_dir = new_dir;
             }
-            Command::File(size, _) => {
+            Command::File(size) => {
                 current_dir.borrow_mut().size += size;
             }
             _ => {}
