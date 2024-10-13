@@ -40,6 +40,37 @@ enum RuleOutput {
     Redirect(String),
 }
 
+#[derive(Debug, Clone, Copy)]
+struct Interval {
+    min: i32,
+    max: i32,
+}
+
+impl Interval {
+    fn split(&self, value: i32) -> (Option<Interval>, Option<Interval>) {
+        if value <= self.min {
+            (None, Some(Interval { min: self.min, max: self.max }))
+        } else if value >= self.max {
+            (Some(Interval { min: self.min, max: self.max }), None)
+        } else {
+            (
+                Some(Interval { min: self.min, max: value }),
+                Some(Interval { min: value, max: self.max }),
+            )
+        }
+    }
+}
+
+type CombinationsBox = [Interval; 4];
+
+fn get_box_size(combinations: &CombinationsBox) -> i64 {
+    let mut size = 1;
+    for interval in combinations {
+        size *= (interval.max - interval.min) as i64;
+    }
+    size
+}
+
 fn parse_name(input: &str) -> IResult<&str, String> {
     // reads a non empty sequence of lowercase letters
     let (input, name) = nom::character::complete::alpha1(input)?;
@@ -151,6 +182,121 @@ fn sort(
     false
 }
 
+/// Counts the number of combinations in a given intervals box that will be accepted if processed through a workflow
+/// 
+/// # Arguments
+/// 
+/// * `combinations` - The box of intervals representing the combinations
+/// * `workflow` - The workflow used to process the combinations
+/// * `rule_index` - The index of the workflow's rule currently processing the combinations
+/// * `workflows` - The map of all workflows
+fn count_accepted(
+    combinations: &CombinationsBox,
+    workflow: &Vec<WorkflowRule>,
+    rule_index: usize,
+    workflows: &HashMap<String, Vec<WorkflowRule>>
+) -> i64 {
+    let mut total: i64 = 0;
+    let rule = &workflow[rule_index];
+    match &rule.condition {
+        Some(condition) => {
+            let passed_combinations: Option<CombinationsBox>; // combinations that pass the rule condition
+            let failed_combinations: Option<CombinationsBox>; // combinations that fail the rule condition
+            if condition.comparator == '<' {
+                let (low, high) = combinations[condition.category].split(condition.value);
+                match low {
+                    Some(low) => {
+                        let mut passed = combinations.clone();
+                        passed[condition.category] = low;
+                        passed_combinations = Some(passed);
+                    }
+                    None => {
+                        passed_combinations = None;
+                    }
+                }
+                match high {
+                    Some(high) => {
+                        let mut failed = combinations.clone();
+                        failed[condition.category] = high;
+                        failed_combinations = Some(failed);
+                    }
+                    None => {
+                        failed_combinations = None;
+                    }
+                }
+            } else {
+                let (low, high) = combinations[condition.category].split(condition.value + 1);
+                match low {
+                    Some(low) => {
+                        let mut failed = combinations.clone();
+                        failed[condition.category] = low;
+                        failed_combinations = Some(failed);
+                    }
+                    None => {
+                        failed_combinations = None;
+                    }
+                }
+                match high {
+                    Some(high) => {
+                        let mut passed = combinations.clone();
+                        passed[condition.category] = high;
+                        passed_combinations = Some(passed);
+                    }
+                    None => {
+                        passed_combinations = None;
+                    }
+                }
+            }
+            match rule.output {
+                // process the combinations that passed the rule condition
+                RuleOutput::Accept => {
+                    // all combinations that passed the rule condition are accepted
+                    if let Some(passed_combinations) = passed_combinations {
+                        total += get_box_size(&passed_combinations);
+                    }
+                }
+                RuleOutput::Reject => {} // no combinations are accepted
+                RuleOutput::Redirect(ref target) => {
+                    // forward the passed combinations to the next workflow
+                    if let Some(passed_combinations) = passed_combinations {
+                        total += count_accepted(
+                            &passed_combinations,
+                            workflows.get(target).unwrap(),
+                            0,
+                            workflows
+                        );
+                    }
+                }
+            }
+            if let Some(failed_combinations) = failed_combinations {
+                // process the combinations that failed the rule condition
+                // combinations are passed through the next rule in the current workflow
+                total += count_accepted(&failed_combinations, workflow, rule_index + 1, workflows);
+            }
+        }
+        None => {
+            // if no condition process all combinations depending on the rule output
+            match rule.output {
+                RuleOutput::Accept => {
+                    // all combinations are accepted
+                    total += get_box_size(combinations);
+                }
+                RuleOutput::Reject => {} // no combinations are accepted
+                RuleOutput::Redirect(ref target) => {
+                    // forward all combinations to the next workflow
+                    total += count_accepted(
+                        combinations,
+                        workflows.get(target).unwrap(),
+                        0,
+                        workflows
+                    );
+                }
+            }
+        }
+    }
+    total
+}
+
 pub fn solve1() -> i32 {
     let input = utils::read_input("src/year2023/day19/input.txt").unwrap();
     let (workflows, machine_parts) = parse_input(&input);
@@ -166,10 +312,17 @@ pub fn solve1() -> i32 {
     total
 }
 
-pub fn solve2() -> i32 {
-    // let input = utils::read_input("src/year2023/day19/input.txt").unwrap();
-    // let (workflows, _) = parse_input(&input);
-    0
+pub fn solve2() -> i64 {
+    let input = utils::read_input("src/year2023/day19/input.txt").unwrap();
+    let (workflows, _) = parse_input(&input);
+
+    let combinations: CombinationsBox = [
+        Interval { min: 1, max: 4001 },
+        Interval { min: 1, max: 4001 },
+        Interval { min: 1, max: 4001 },
+        Interval { min: 1, max: 4001 },
+    ];
+    count_accepted(&combinations, &workflows.get("in").unwrap(), 0, &workflows)
 }
 
 #[cfg(test)]
@@ -187,6 +340,6 @@ mod tests {
     fn test_solve2() {
         let solution = solve2();
         println!("Part Two: {}", solution);
-        // assert_eq!(solution, 0);
+        assert_eq!(solution, 117954800808317);
     }
 }
