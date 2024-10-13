@@ -42,6 +42,16 @@ pub fn parse_int<T: FromStr + Neg<Output = T>>(input: &str) -> IResult<&str, T> 
     )(input)
 }
 
+/// Divides a by b and rounds up
+/// 
+/// # Arguments
+/// 
+/// * `a` - The dividend
+/// * `b` - The divisor
+/// 
+/// # Returns
+/// 
+/// The result of the integer division rounded up
 pub fn div_up(a: i32, b: i32) -> i32 {
     (a + (b - 1)) / b
 }
