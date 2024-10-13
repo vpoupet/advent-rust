@@ -184,7 +184,7 @@ pub fn solve1() -> i32 {
 }
 
 pub fn solve2() -> i32 {
-    let (adjacency_matrix, flow_rates) = parse_input("src/year2022/day16/input_matthieu.txt");
+    let (adjacency_matrix, flow_rates) = parse_input("src/year2022/day16/input.txt");
     let distances = floyd_warshall(adjacency_matrix);
 
     let mut best_score = 0;
@@ -225,7 +225,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "long test (125s)"]
+    // #[ignore = "long test (125s)"]
     fn test_solve2() {
         let solution = solve2();
         println!("Part Two: {}", solution);

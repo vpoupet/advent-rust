@@ -167,7 +167,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "long test (9s)"]
+    // #[ignore = "long test (9s)"]
     fn test_solve2() {
         let solution = solve2();
         println!("Part Two: {}", solution);
