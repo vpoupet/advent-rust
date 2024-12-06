@@ -1,0 +1,184 @@
+broadcaster
+  Outputs: fv, cr, rt, tk
+
+&ph (conjunction)
+  Outputs: nn, xz, tk, ps, &qs
+  Inputs: cm, bj, mg, ls, cf, dp, tk, nz, nh
+
+&zp (conjunction)
+  Outputs: kj, &kz, gx, fv, lv, tp
+  Inputs: sx, dv, tt, rk, xg, mt, fv, nt
+
+&mf (conjunction)
+  Outputs: gb, tx, &xj, dd, qx, rt, fn
+  Inputs: rt, sk, bf, jp, vx, bx, rj
+
+&jn (conjunction)
+  Outputs: &km, cr, vz
+  Inputs: br, hf, gh, gk, fj, xt, sl, dj, cr, fk, tl
+
+&qs (conjunction)
+  Outputs: &gq
+  Inputs: &ph
+
+&kz (conjunction)
+  Outputs: &gq
+  Inputs: &zp
+
+&xj (conjunction)
+  Outputs: &gq
+  Inputs: &mf
+
+&km (conjunction)
+  Outputs: &gq
+  Inputs: &jn
+
+&gq (conjunction)
+  Outputs: rx
+  Inputs: &qs, &kz, &xj, &km
+
+ls (flip-flop)
+  Outputs: &ph, cf
+
+fv (flip-flop)
+  Outputs: nt, &zp
+
+tp (flip-flop)
+  Outputs: gx
+
+cr (flip-flop)
+  Outputs: vz, &jn
+
+kj (flip-flop)
+  Outputs: tt
+
+cf (flip-flop)
+  Outputs: &ph, nz
+
+tl (flip-flop)
+  Outputs: &jn, br
+
+mt (flip-flop)
+  Outputs: xg, &zp
+
+br (flip-flop)
+  Outputs: &jn, fk
+
+dp (flip-flop)
+  Outputs: &ph
+
+rk (flip-flop)
+  Outputs: &zp, tp
+
+rj (flip-flop)
+  Outputs: qx, &mf
+
+xz (flip-flop)
+  Outputs: cm
+
+nh (flip-flop)
+  Outputs: &ph, ls
+
+gb (flip-flop)
+  Outputs: jp
+
+gh (flip-flop)
+  Outputs: &jn, dj
+
+hf (flip-flop)
+  Outputs: tl, &jn
+
+nz (flip-flop)
+  Outputs: dp, &ph
+
+fk (flip-flop)
+  Outputs: &jn, gk
+
+dv (flip-flop)
+  Outputs: &zp
+
+ps (flip-flop)
+  Outputs: xz
+
+tx (flip-flop)
+  Outputs: gb
+
+dj (flip-flop)
+  Outputs: fj, &jn
+
+gk (flip-flop)
+  Outputs: &jn, xt
+
+cm (flip-flop)
+  Outputs: bj, &ph
+
+nt (flip-flop)
+  Outputs: &zp, rk
+
+tt (flip-flop)
+  Outputs: mt, &zp
+
+dd (flip-flop)
+  Outputs: bf
+
+gx (flip-flop)
+  Outputs: lv
+
+bx (flip-flop)
+  Outputs: tx, &mf
+
+bf (flip-flop)
+  Outputs: vx, &mf
+
+fj (flip-flop)
+  Outputs: sl, &jn
+
+xg (flip-flop)
+  Outputs: dv, &zp
+
+vz (flip-flop)
+  Outputs: hf
+
+sx (flip-flop)
+  Outputs: kj, &zp
+
+sk (flip-flop)
+  Outputs: &mf
+
+rt (flip-flop)
+  Outputs: fn, &mf
+
+jp (flip-flop)
+  Outputs: &mf, dd
+
+fn (flip-flop)
+  Outputs: rj
+
+xt (flip-flop)
+  Outputs: &jn, gh
+
+lv (flip-flop)
+  Outputs: sx
+
+vx (flip-flop)
+  Outputs: &mf, sk
+
+sl (flip-flop)
+  Outputs: &jn
+
+bj (flip-flop)
+  Outputs: &ph, nn
+
+mg (flip-flop)
+  Outputs: &ph, ps
+
+qx (flip-flop)
+  Outputs: bx
+
+tk (flip-flop)
+  Outputs: mg, &ph
+
+nn (flip-flop)
+  Outputs: nh
+
+Solution: 0

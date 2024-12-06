@@ -76,6 +76,23 @@ impl Module {
             }
         }
     }
+
+    fn print(&self) {
+        let module_type = match (&self.flipflop_state, &self.conjunction_state) {
+            (Some(_), _) => " (flip-flop)",
+            (_, Some(_)) => " (conjunction)",
+            _ => "",
+        };
+        println!("{}{}", self.name, module_type);
+        println!("  Outputs: {}", self.outputs.join(", "));
+        if let Some(conjunction_state) = &self.conjunction_state {
+            let keys: Vec<String> = conjunction_state
+                .keys()
+                .map(|s| s.to_string())
+                .collect();
+            println!("  Inputs: {}", keys.join(", "));
+        }
+    }
 }
 
 fn parse_module_name(input: &str) -> IResult<&str, (Option<char>, &str)> {
@@ -136,7 +153,7 @@ fn parse_input(input: &str) -> HashMap<String, Module> {
     modules
 }
 
-fn press_button(modules: &mut HashMap<String, Module>) -> (u64, u64) {
+fn press_button_1(modules: &mut HashMap<String, Module>) -> (u64, u64) {
     let mut pulses = VecDeque::new();
     pulses.push_back(Pulse {
         source: "button".to_string(),
@@ -161,6 +178,27 @@ fn press_button(modules: &mut HashMap<String, Module>) -> (u64, u64) {
     (nb_low, nb_high)
 }
 
+// fn press_button_2(modules: &mut HashMap<String, Module>) -> bool {
+//     let mut pulses = VecDeque::new();
+//     pulses.push_back(Pulse {
+//         source: "button".to_string(),
+//         target: "broadcaster".to_string(),
+//         is_high: false,
+//     });
+
+//     while !pulses.is_empty() {
+//         let pulse = pulses.pop_front().unwrap();
+//         if pulse.target == "rx" && !pulse.is_high {
+//             return true;
+//         }
+//         if let Some(module) = modules.get_mut(&pulse.target) {
+//             module.receive_pulse(&pulse, &mut pulses);
+//         }
+//     }
+
+//     false
+// }
+
 pub fn solve1() -> u64 {
     let input = utils::read_input("src/year2023/day20/input.txt").unwrap();
     let mut modules = parse_input(&input);
@@ -169,7 +207,7 @@ pub fn solve1() -> u64 {
     let mut high_count = 0;
 
     for _ in 0..1000 {
-        let (delta_low, delta_high) = press_button(&mut modules);
+        let (delta_low, delta_high) = press_button_1(&mut modules);
         low_count += delta_low;
         high_count += delta_high;
     }
@@ -177,8 +215,21 @@ pub fn solve1() -> u64 {
     low_count * high_count
 }
 
-pub fn solve2() -> i32 {
-    // let input = utils::read_input("src/year2023/day20/input.txt").unwrap();
+pub fn solve2() -> u64 {
+    let input = utils::read_input("src/year2023/day20/input.txt").unwrap();
+    let modules = parse_input(&input);
+    for (_, module) in &modules {
+        module.print();
+        println!("");
+    }
+
+    // let mut button_count = 0;
+    // loop {
+    //     button_count += 1;
+    //     if press_button_2(&mut modules) {
+    //         return button_count;
+    //     }
+    // }
     0
 }
 
