@@ -6,13 +6,6 @@ fn parse_line(input: &str) -> IResult<&str, (i64, Vec<i64>)> {
     separated_pair(utils::parse_int, tag(": "), separated_list1(tag(" "), utils::parse_int))(input)
 }
 
-fn append(a: i64, b: i64) -> i64 {
-    let a_str = a.to_string();
-    let b_str = b.to_string();
-    let concatenated = format!("{}{}", a_str, b_str);
-    concatenated.parse::<i64>().unwrap()
-}
-
 fn can_solve_1(target: i64, operands: Vec<i64>) -> bool {
     if target < operands[0] {
         return false;
