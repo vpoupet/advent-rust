@@ -55,3 +55,25 @@ pub fn parse_int<T: FromStr + Neg<Output = T>>(input: &str) -> IResult<&str, T> 
 pub fn div_up(a: i32, b: i32) -> i32 {
     (a + (b - 1)) / b
 }
+
+pub fn gcd(mut a: i32, mut b: i32) -> i32 {
+    while b != 0 {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    a
+}
+
+pub fn bezout(a: i32, b: i32) -> (i32, i32, i32) {
+    let mut r = (a, b);
+    let mut s = (1, 0);
+    let mut t = (0, 1);
+    while r.1 != 0 {
+        let q = r.0 / r.1;
+        r = (r.1, r.0 - q * r.1);
+        s = (s.1, s.0 - q * s.1);
+        t = (t.1, t.0 - q * t.1);
+    }
+    (r.0, s.0, t.0)
+}
