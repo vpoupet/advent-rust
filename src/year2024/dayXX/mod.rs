@@ -6,7 +6,7 @@ pub fn solve1() -> i32 {
 }
 
 pub fn solve2() -> i32 {
-    let input = utils::read_input("src/year2024/dayXX/input.txt").unwrap();
+    // let input = utils::read_input("src/year2024/dayXX/input.txt").unwrap();
     0
 }
 
